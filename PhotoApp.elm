@@ -11,12 +11,20 @@ type alias Photo =
 
 type alias Model =
   { photos : List Photo
-  , selectedUrl : String }
+  , selectedUrl : String
+  , chosenSize: ThumbnailSize }
 
 
-type alias Msg = 
-  { operation : String
-  , data : String }
+type Msg
+  = SelectByUrl String
+  | SurpriseMe
+  | SetSize ThumbnailSize
+
+
+type ThumbnailSize
+  = Small
+  | Medium
+  | Large
 
 
 
@@ -30,8 +38,10 @@ view : Model -> Html Msg
 view model =
   div [ class "content" ]
     [ h1 [] [ text "Photo App" ]
-    , button [ onClick { operation = "SURPRISE_ME", data = "" }] [ text "Surprise me!" ]
-    , div [ id "thumbnails" ]
+    , button [ onClick SurpriseMe] [ text "Surprise me!" ]
+    , h3 [] [ text "Thumbnail Size: " ]
+    , div [ id "choose-size" ] (List.map viewSizeChooser [ Small, Medium, Large ])
+    , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
       (List.map (viewThumbnail model.selectedUrl) model.photos)
     , img
         [ class "large"
@@ -46,9 +56,29 @@ viewThumbnail : String -> Photo -> Html Msg
 viewThumbnail selectedUrl thumbnail =
   img [ src (urlPrefix ++ thumbnail.url)
       , classList [ ("selected", selectedUrl == thumbnail.url) ]
-      , onClick { operation = "SELECT_PHOTO", data = thumbnail.url }
+      , onClick (SelectByUrl thumbnail.url)
       ]
       []
+
+
+
+viewSizeChooser : ThumbnailSize -> Html Msg
+viewSizeChooser size =
+  label [] [ input [ type_ "radio", name "size", onClick (SetSize size) ] []
+           , text (sizeToString size)
+           ]
+
+
+
+sizeToString : ThumbnailSize -> String
+sizeToString size =
+  case size of
+    Small -> 
+      "small"
+    Medium -> 
+      "medium"
+    Large -> 
+      "large"
 
 
 
@@ -59,7 +89,8 @@ initialModel =
       , { url = "2.jpeg" }
       , { url = "3.jpeg" }
       ]
-  , selectedUrl = "1.jpeg" 
+  , selectedUrl = "1.jpeg"
+  , chosenSize = Medium
   }
   
 
@@ -70,15 +101,25 @@ photoArray =
 
 
 
+getPhotoUrl : Int -> String
+getPhotoUrl index =
+  case Array.get index photoArray of
+    Just photo ->
+      photo.url
+    Nothing ->
+      ""
+
+
+
 update : Msg -> Model -> Model
 update msg model = 
-  case msg.operation of
-    "SELECT_PHOTO" ->
-      { model | selectedUrl = msg.data }
-    "SURPRISE_ME" ->
+  case msg of
+    SelectByUrl url ->
+      { model | selectedUrl = url }
+    SurpriseMe ->
       { model | selectedUrl = "2.jpeg" }
-    _ ->
-      model
+    SetSize size ->
+      { model | chosenSize = size }
 
 
 
