@@ -9059,12 +9059,35 @@ var _user$project$PhotoApp$sizeToString = function (size) {
 	}
 };
 var _user$project$PhotoApp$urlPrefix = 'http://elm-in-action.com/';
+var _user$project$PhotoApp$viewLarge = function (maybeUrl) {
+	var _p1 = maybeUrl;
+	if (_p1.ctor === 'Nothing') {
+		return _elm_lang$html$Html$text('');
+	} else {
+		return A2(
+			_elm_lang$html$Html$img,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('large'),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$src(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_user$project$PhotoApp$urlPrefix,
+							A2(_elm_lang$core$Basics_ops['++'], 'large/', _p1._0))),
+					_1: {ctor: '[]'}
+				}
+			},
+			{ctor: '[]'});
+	}
+};
 var _user$project$PhotoApp$Photo = function (a) {
 	return {url: a};
 };
-var _user$project$PhotoApp$Model = F3(
-	function (a, b, c) {
-		return {photos: a, selectedUrl: b, chosenSize: c};
+var _user$project$PhotoApp$Model = F4(
+	function (a, b, c, d) {
+		return {photos: a, selectedUrl: b, loadingError: c, chosenSize: d};
 	});
 var _user$project$PhotoApp$SelectByIndex = function (a) {
 	return {ctor: 'SelectByIndex', _0: a};
@@ -9123,7 +9146,9 @@ var _user$project$PhotoApp$viewThumbnail = F2(
 							_0: {
 								ctor: '_Tuple2',
 								_0: 'selected',
-								_1: _elm_lang$core$Native_Utils.eq(selectedUrl, thumbnail.url)
+								_1: _elm_lang$core$Native_Utils.eq(
+									selectedUrl,
+									_elm_lang$core$Maybe$Just(thumbnail.url))
 							},
 							_1: {ctor: '[]'}
 						}),
@@ -9140,29 +9165,18 @@ var _user$project$PhotoApp$viewThumbnail = F2(
 var _user$project$PhotoApp$Large = {ctor: 'Large'};
 var _user$project$PhotoApp$Medium = {ctor: 'Medium'};
 var _user$project$PhotoApp$initialModel = {
-	photos: {
-		ctor: '::',
-		_0: {url: '1.jpeg'},
-		_1: {
-			ctor: '::',
-			_0: {url: '2.jpeg'},
-			_1: {
-				ctor: '::',
-				_0: {url: '3.jpeg'},
-				_1: {ctor: '[]'}
-			}
-		}
-	},
-	selectedUrl: '1.jpeg',
+	photos: {ctor: '[]'},
+	selectedUrl: _elm_lang$core$Maybe$Nothing,
+	loadingError: _elm_lang$core$Maybe$Nothing,
 	chosenSize: _user$project$PhotoApp$Medium
 };
 var _user$project$PhotoApp$photoArray = _elm_lang$core$Array$fromList(_user$project$PhotoApp$initialModel.photos);
 var _user$project$PhotoApp$getPhotoUrl = function (index) {
-	var _p1 = A2(_elm_lang$core$Array$get, index, _user$project$PhotoApp$photoArray);
-	if (_p1.ctor === 'Just') {
-		return _p1._0.url;
+	var _p2 = A2(_elm_lang$core$Array$get, index, _user$project$PhotoApp$photoArray);
+	if (_p2.ctor === 'Just') {
+		return _elm_lang$core$Maybe$Just(_p2._0.url);
 	} else {
-		return '';
+		return _elm_lang$core$Maybe$Nothing;
 	}
 };
 var _user$project$PhotoApp$randomPhotoPicker = A2(
@@ -9171,14 +9185,16 @@ var _user$project$PhotoApp$randomPhotoPicker = A2(
 	_elm_lang$core$Array$length(_user$project$PhotoApp$photoArray) - 1);
 var _user$project$PhotoApp$update = F2(
 	function (msg, model) {
-		var _p2 = msg;
-		switch (_p2.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'SelectByUrl':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{selectedUrl: _p2._0}),
+						{
+							selectedUrl: _elm_lang$core$Maybe$Just(_p3._0)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'SurpriseMe':
@@ -9192,7 +9208,7 @@ var _user$project$PhotoApp$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{chosenSize: _p2._0}),
+						{chosenSize: _p3._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -9201,7 +9217,7 @@ var _user$project$PhotoApp$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							selectedUrl: _user$project$PhotoApp$getPhotoUrl(_p2._0)
+							selectedUrl: _user$project$PhotoApp$getPhotoUrl(_p3._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -9295,22 +9311,7 @@ var _user$project$PhotoApp$view = function (model) {
 									model.photos)),
 							_1: {
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$img,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('large'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$src(
-												A2(
-													_elm_lang$core$Basics_ops['++'],
-													_user$project$PhotoApp$urlPrefix,
-													A2(_elm_lang$core$Basics_ops['++'], 'large/', model.selectedUrl))),
-											_1: {ctor: '[]'}
-										}
-									},
-									{ctor: '[]'}),
+								_0: _user$project$PhotoApp$viewLarge(model.selectedUrl),
 								_1: {ctor: '[]'}
 							}
 						}
